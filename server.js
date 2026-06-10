@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
 app.get('/api/business-data', async (req, res) => {
   try {
     const [rows] = await db.query(
-      'SELECT * FROM business_data'
+      'SELECT * FROM data1'
     );
     res.json(rows);
   } catch (error) {
