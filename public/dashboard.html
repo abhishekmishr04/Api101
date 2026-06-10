@@ -55,6 +55,7 @@
     th { background: #1f2937; color: var(--accent); }
     .status { padding: 4px 8px; border-radius: 999px; font-size: 12px; background: #1d4ed8; }
     .loading, .error { padding: 20px; color: var(--muted); }
+    .hint { margin-top: 8px; font-size: 13px; color: var(--muted); }
   </style>
 </head>
 <body>
@@ -143,7 +144,7 @@
         document.getElementById('loading').style.display = 'none';
         const errorEl = document.getElementById('error');
         errorEl.style.display = 'block';
-        errorEl.textContent = 'Unable to load data from the API.';
+        errorEl.innerHTML = '<strong>Unable to load data from the API.</strong><div class="hint">Check that MySQL is running and the server is connected to the correct database.</div>';
         console.error(error);
       }
     }
