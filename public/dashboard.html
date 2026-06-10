@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0f172a;
+      --panel: #111827;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: var(--text);
+    }
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+    .header { margin-bottom: 20px; }
+    .stats {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-bottom: 20px;
+    }
+    .card {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+    .card h3 { margin: 0 0 8px; color: var(--muted); font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .card .value { font-size: 28px; font-weight: bold; }
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(17, 24, 39, 0.95);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap;
+    }
+    th { background: #1f2937; color: var(--accent); }
+    .status { padding: 4px 8px; border-radius: 999px; font-size: 12px; background: #1d4ed8; }
+    .loading, .error { padding: 20px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Sales Dashboard</h1>
+      <p>Data loaded from the local API endpoint.</p>
+    </div>
+
+    <div class="stats">
+      <div class="card">
+        <h3>Total Records</h3>
+        <div id="total-records" class="value">--</div>
+      </div>
+      <div class="card">
+        <h3>Unique Categories</h3>
+        <div id="unique-categories" class="value">--</div>
+      </div>
+      <div class="card">
+        <h3>Unique SKUs</h3>
+        <div id="unique-skus" class="value">--</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="loading" class="loading">Loading data...</div>
+      <div id="error" class="error" style="display:none"></div>
+      <div id="table-wrapper" class="table-wrap" style="display:none"></div>
+    </div>
+  </div>
+
+  <script>
+    async function loadData() {
+      try {
+        const response = await fetch('/api/business-data');
+        if (!response.ok) throw new Error('Failed to load data');
+        const data = await response.json();
+
+        const totalRecords = data.length;
+        const categories = new Set(data.map(item => item.Category || item.category || 'Unknown'));
+        const skus = new Set(data.map(item => item['SKU ID'] || item['SKU'] || item.sku || item.sku_id || 'Unknown'));
+
+        document.getElementById('total-records').textContent = totalRecords;
+        document.getElementById('unique-categories').textContent = categories.size;
+        document.getElementById('unique-skus').textContent = skus.size;
+
+        const loading = document.getElementById('loading');
+        const tableWrapper = document.getElementById('table-wrapper');
+        loading.style.display = 'none';
+        tableWrapper.style.display = 'block';
+
+        if (!data.length) {
+          tableWrapper.innerHTML = '<p>No data available.</p>';
+          return;
+        }
+
+        const columns = Object.keys(data[0]).slice(0, 10);
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        const tbody = document.createElement('tbody');
+
+        const headerRow = document.createElement('tr');
+        columns.forEach(col => {
+          const th = document.createElement('th');
+          th.textContent = col;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+
+        data.slice(0, 80).forEach(item => {
+          const tr = document.createElement('tr');
+          columns.forEach(col => {
+            const td = document.createElement('td');
+            const value = item[col];
+            td.textContent = value ?? '';
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+
+        table.appendChild(thead);
+        table.appendChild(tbody);
+        tableWrapper.innerHTML = '';
+        tableWrapper.appendChild(table);
+      } catch (error) {
+        document.getElementById('loading').style.display = 'none';
+        const errorEl = document.getElementById('error');
+        errorEl.style.display = 'block';
+        errorEl.textContent = 'Unable to load data from the API.';
+        console.error(error);
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
