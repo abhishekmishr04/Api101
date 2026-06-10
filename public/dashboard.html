@@ -90,9 +90,15 @@
   <script>
     async function loadData() {
       try {
-        const response = await fetch('/api/business-data');
-        if (!response.ok) throw new Error('Failed to load data');
-        const data = await response.json();
+        let data = [];
+        const apiResponse = await fetch('/api/business-data');
+        if (apiResponse.ok) {
+          data = await apiResponse.json();
+        } else {
+          const fallbackResponse = await fetch('/data.json');
+          if (!fallbackResponse.ok) throw new Error('Failed to load data');
+          data = await fallbackResponse.json();
+        }
 
         const totalRecords = data.length;
         const categories = new Set(data.map(item => item.Category || item.category || 'Unknown'));
