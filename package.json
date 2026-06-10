@@ -1,0 +1,15 @@
+{
+  "name": "api101",
+  "version": "1.0.0",
+  "description": "Simple Express API with MySQL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.2",
+    "dotenv": "^16.4.1",
+    "express": "^4.21.2",
+    "mysql2": "^3.4.2"
+  }
+}
