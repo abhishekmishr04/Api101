@@ -90,14 +90,25 @@
   <script>
     async function loadData() {
       try {
+        const candidates = ['/data.json', '/api/business-data'];
         let data = [];
-        const apiResponse = await fetch('/api/business-data');
-        if (apiResponse.ok) {
-          data = await apiResponse.json();
-        } else {
-          const fallbackResponse = await fetch('/data.json');
-          if (!fallbackResponse.ok) throw new Error('Failed to load data');
-          data = await fallbackResponse.json();
+        let source = 'none';
+
+        for (const url of candidates) {
+          try {
+            const response = await fetch(url);
+            if (response.ok) {
+              data = await response.json();
+              source = url;
+              break;
+            }
+          } catch (error) {
+            console.warn(`Unable to load ${url}`, error);
+          }
+        }
+
+        if (!Array.isArray(data) || !data.length) {
+          throw new Error('No data returned from available sources');
         }
 
         const totalRecords = data.length;
