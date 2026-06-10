@@ -35,7 +35,24 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server running on port ${port}`);
-});
+const host = '0.0.0.0';
+const preferredPort = Number(process.env.PORT) || 3000;
+
+const startServer = (port) => {
+  const server = app.listen(port, host, () => {
+    console.log(`Server running on port ${port}`);
+  });
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE' && port === preferredPort) {
+      const fallbackPort = preferredPort + 1;
+      console.log(`Port ${preferredPort} is busy. Trying ${fallbackPort} instead.`);
+      startServer(fallbackPort);
+    } else {
+      console.error(error);
+      process.exit(1);
+    }
+  });
+};
+
+startServer(preferredPort);
