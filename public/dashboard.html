@@ -3,26 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sales Dashboard</title>
+  <title>Sales Analytics Dashboard</title>
   <style>
     :root {
-      color-scheme: light dark;
-      --bg: #0f172a;
-      --panel: #111827;
-      --text: #f9fafb;
-      --muted: #9ca3af;
+      color-scheme: dark;
+      --bg: #020617;
+      --panel: rgba(15, 23, 42, 0.95);
+      --panel-2: rgba(30, 41, 59, 0.95);
+      --text: #f8fafc;
+      --muted: #94a3b8;
       --accent: #38bdf8;
-      --border: #334155;
+      --accent-2: #34d399;
+      --border: rgba(148, 163, 184, 0.24);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #020617, #0f172a);
+      font-family: Inter, Arial, sans-serif;
+      background: radial-gradient(circle at top left, #0f172a, var(--bg));
       color: var(--text);
+      min-height: 100vh;
     }
-    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
-    .header { margin-bottom: 20px; }
+    .container { max-width: 1500px; margin: 0 auto; padding: 24px; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .header h1 { margin: 0 0 6px; font-size: 28px; }
+    .header p { margin: 0; color: var(--muted); }
+    .pill {
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.7);
+      color: var(--muted);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
     .stats {
       display: grid;
       gap: 16px;
@@ -30,19 +50,49 @@
       margin-bottom: 20px;
     }
     .card {
-      background: rgba(17, 24, 39, 0.9);
+      background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.28);
     }
-    .card h3 { margin: 0 0 8px; color: var(--muted); font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; }
-    .card .value { font-size: 28px; font-weight: bold; }
+    .card h3 { margin: 0 0 8px; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .card .value { font-size: 28px; font-weight: 700; }
+    .filters {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      margin-bottom: 16px;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-group label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    input, select, button {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    button {
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), #2563eb);
+      border: none;
+      color: white;
+      font-weight: 600;
+    }
+    .grid-2 {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1.4fr 0.9fr;
+      margin-bottom: 16px;
+    }
     .table-wrap { overflow-x: auto; }
     table {
       width: 100%;
       border-collapse: collapse;
-      background: rgba(17, 24, 39, 0.95);
+      background: rgba(15, 23, 42, 0.9);
       border-radius: 12px;
       overflow: hidden;
     }
@@ -52,17 +102,46 @@
       text-align: left;
       white-space: nowrap;
     }
-    th { background: #1f2937; color: var(--accent); }
-    .status { padding: 4px 8px; border-radius: 999px; font-size: 12px; background: #1d4ed8; }
+    th { background: rgba(30, 41, 59, 0.95); color: var(--accent); }
+    .bar-list { display: flex; flex-direction: column; gap: 10px; }
+    .bar-row { display: flex; flex-direction: column; gap: 6px; }
+    .bar-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; }
+    .bar-track {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.18);
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .pagination { display: flex; gap: 8px; }
+    .pagination button { padding: 8px 10px; width: auto; }
     .loading, .error { padding: 20px; color: var(--muted); }
     .hint { margin-top: 8px; font-size: 13px; color: var(--muted); }
+    @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>Sales Dashboard</h1>
-      <p>Data loaded from the local API endpoint.</p>
+      <div>
+        <h1>Sales Analytics Dashboard</h1>
+        <p>Explore your complete dataset with quick filters, KPI summaries, and a detailed table view.</p>
+      </div>
+      <div id="source-pill" class="pill">Loading data…</div>
     </div>
 
     <div class="stats">
@@ -75,25 +154,245 @@
         <div id="unique-categories" class="value">--</div>
       </div>
       <div class="card">
+        <h3>Unique Brands</h3>
+        <div id="unique-brands" class="value">--</div>
+      </div>
+      <div class="card">
         <h3>Unique SKUs</h3>
         <div id="unique-skus" class="value">--</div>
       </div>
     </div>
 
-    <div class="card">
-      <div id="loading" class="loading">Loading data...</div>
-      <div id="error" class="error" style="display:none"></div>
-      <div id="table-wrapper" class="table-wrap" style="display:none"></div>
+    <div class="filters">
+      <div class="filter-group">
+        <label for="search">Search</label>
+        <input id="search" type="text" placeholder="Search records" />
+      </div>
+      <div class="filter-group">
+        <label for="category">Category</label>
+        <select id="category"><option value="">All categories</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="brand">Brand</label>
+        <select id="brand"><option value="">All brands</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="month">Month</label>
+        <select id="month"><option value="">All months</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="page-size">Rows per page</label>
+        <select id="page-size">
+          <option value="50">50</option>
+          <option value="100" selected>100</option>
+          <option value="200">200</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="reset">Reset</label>
+        <button id="reset" type="button">Clear filters</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Data Explorer</h3>
+        <div id="loading" class="loading">Loading data...</div>
+        <div id="error" class="error" style="display:none"></div>
+        <div id="table-wrapper" style="display:none">
+          <div class="table-wrap">
+            <table>
+              <thead><tr id="table-head"></tr></thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+          <div class="footer-row">
+            <div id="table-summary">Showing 0 rows</div>
+            <div class="pagination">
+              <button id="prev-page" type="button">Previous</button>
+              <button id="next-page" type="button">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Insights</h3>
+        <div id="insights" class="bar-list"></div>
+      </div>
     </div>
   </div>
 
   <script>
+    const state = {
+      data: [],
+      filtered: [],
+      page: 1,
+      pageSize: 100,
+      source: 'loading'
+    };
+
+    const elements = {
+      loading: document.getElementById('loading'),
+      error: document.getElementById('error'),
+      tableWrapper: document.getElementById('table-wrapper'),
+      tableHead: document.getElementById('table-head'),
+      tableBody: document.getElementById('table-body'),
+      tableSummary: document.getElementById('table-summary'),
+      insights: document.getElementById('insights'),
+      sourcePill: document.getElementById('source-pill')
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getValue(item, key) {
+      const direct = item[key];
+      if (direct !== undefined && direct !== null && direct !== '') return String(direct);
+      const fallbackKeys = [
+        key.toLowerCase(),
+        key.replace(/ /g, ''),
+        key.replace(/ /g, '_'),
+        key.replace(/ /g, '-')
+      ];
+      for (const candidate of fallbackKeys) {
+        const value = item[candidate];
+        if (value !== undefined && value !== null && value !== '') return String(value);
+      }
+      return 'Unknown';
+    }
+
+    function getColumns(data) {
+      const preferred = ['Month', 'Seller Name', 'Brand', 'Product Id', 'SKU ID', 'Category', 'Vertical'];
+      const fromData = Object.keys(data[0] || {});
+      return [...new Set([...preferred.filter((key) => fromData.includes(key)), ...fromData])].slice(0, 10);
+    }
+
+    function populateFilters() {
+      const fieldMap = {
+        category: ['Category', 'category'],
+        brand: ['Brand', 'brand'],
+        month: ['Month', 'month']
+      };
+      Object.entries(fieldMap).forEach(([selectId, keys]) => {
+        const select = document.getElementById(selectId);
+        const values = [...new Set(state.data.map((item) => {
+          for (const key of keys) {
+            const value = getValue(item, key);
+            if (value && value !== 'Unknown') return value;
+          }
+          return '';
+        }))].filter(Boolean).sort();
+        const currentValue = select.value;
+        select.innerHTML = `<option value="">All ${selectId === 'category' ? 'categories' : selectId === 'brand' ? 'brands' : 'months'}</option>`;
+        values.forEach((value) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          if (currentValue === value) option.selected = true;
+          select.appendChild(option);
+        });
+      });
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('search').value.trim().toLowerCase();
+      const category = document.getElementById('category').value;
+      const brand = document.getElementById('brand').value;
+      const month = document.getElementById('month').value;
+
+      state.filtered = state.data.filter((item) => {
+        const haystack = Object.values(item).join(' ').toLowerCase();
+        const matchesSearch = !search || haystack.includes(search);
+        const matchesCategory = !category || getValue(item, 'Category') === category || getValue(item, 'category') === category;
+        const matchesBrand = !brand || getValue(item, 'Brand') === brand || getValue(item, 'brand') === brand;
+        const matchesMonth = !month || getValue(item, 'Month') === month || getValue(item, 'month') === month;
+        return matchesSearch && matchesCategory && matchesBrand && matchesMonth;
+      });
+      state.page = 1;
+      renderDashboard();
+    }
+
+    function renderStats() {
+      document.getElementById('total-records').textContent = state.filtered.length;
+      const categories = new Set(state.filtered.map((item) => getValue(item, 'Category')));
+      const brands = new Set(state.filtered.map((item) => getValue(item, 'Brand')));
+      const skus = new Set(state.filtered.map((item) => getValue(item, 'SKU ID')));
+      document.getElementById('unique-categories').textContent = categories.size;
+      document.getElementById('unique-brands').textContent = brands.size;
+      document.getElementById('unique-skus').textContent = skus.size;
+    }
+
+    function renderInsights() {
+      const categoryCounts = {};
+      const brandCounts = {};
+      state.filtered.forEach((item) => {
+        const category = getValue(item, 'Category');
+        const brand = getValue(item, 'Brand');
+        categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+        brandCounts[brand] = (brandCounts[brand] || 0) + 1;
+      });
+      const topCategories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const topBrands = Object.entries(brandCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const max = Math.max(1, ...topCategories.map(([, count]) => count), ...topBrands.map(([, count]) => count));
+      const buildBars = (entries, title) => `
+        <div style="margin-bottom: 16px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">${title}</div>
+          <div class="bar-list">
+            ${entries.map(([name, count]) => `
+              <div class="bar-row">
+                <div class="bar-meta">
+                  <span>${escapeHtml(name)}</span>
+                  <span>${count}</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: ${(count / max) * 100}%"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      elements.insights.innerHTML = `${buildBars(topCategories, 'Top Categories')}${buildBars(topBrands, 'Top Brands')}`;
+    }
+
+    function renderTable() {
+      const columns = getColumns(state.filtered[0] ? state.filtered : state.data);
+      const start = (state.page - 1) * state.pageSize;
+      const end = start + state.pageSize;
+      const pageRows = state.filtered.slice(start, end);
+
+      elements.tableHead.innerHTML = columns.map((column) => `<th>${escapeHtml(column)}</th>`).join('');
+      elements.tableBody.innerHTML = pageRows.length ? pageRows.map((item) => `
+        <tr>${columns.map((column) => `<td>${escapeHtml(getValue(item, column))}</td>`).join('')}</tr>
+      `).join('') : '<tr><td colspan="10">No data matches the current filters.</td></tr>';
+
+      const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
+      document.getElementById('prev-page').disabled = state.page <= 1;
+      document.getElementById('next-page').disabled = state.page >= totalPages;
+      elements.tableSummary.textContent = `Showing ${state.filtered.length ? start + 1 : 0}-${Math.min(end, state.filtered.length)} of ${state.filtered.length} records`;
+    }
+
+    function renderDashboard() {
+      renderStats();
+      renderInsights();
+      renderTable();
+      elements.loading.style.display = 'none';
+      elements.tableWrapper.style.display = 'block';
+      elements.sourcePill.textContent = `Source: ${state.source}`;
+    }
+
     async function loadData() {
       try {
         const candidates = ['/data.json', '/api/business-data'];
         let data = [];
         let source = 'none';
-
         for (const url of candidates) {
           try {
             const response = await fetch(url);
@@ -106,65 +405,49 @@
             console.warn(`Unable to load ${url}`, error);
           }
         }
-
-        if (!Array.isArray(data) || !data.length) {
-          throw new Error('No data returned from available sources');
-        }
-
-        const totalRecords = data.length;
-        const categories = new Set(data.map(item => item.Category || item.category || 'Unknown'));
-        const skus = new Set(data.map(item => item['SKU ID'] || item['SKU'] || item.sku || item.sku_id || 'Unknown'));
-
-        document.getElementById('total-records').textContent = totalRecords;
-        document.getElementById('unique-categories').textContent = categories.size;
-        document.getElementById('unique-skus').textContent = skus.size;
-
-        const loading = document.getElementById('loading');
-        const tableWrapper = document.getElementById('table-wrapper');
-        loading.style.display = 'none';
-        tableWrapper.style.display = 'block';
-
-        if (!data.length) {
-          tableWrapper.innerHTML = '<p>No data available.</p>';
-          return;
-        }
-
-        const columns = Object.keys(data[0]).slice(0, 10);
-        const table = document.createElement('table');
-        const thead = document.createElement('thead');
-        const tbody = document.createElement('tbody');
-
-        const headerRow = document.createElement('tr');
-        columns.forEach(col => {
-          const th = document.createElement('th');
-          th.textContent = col;
-          headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-
-        data.slice(0, 80).forEach(item => {
-          const tr = document.createElement('tr');
-          columns.forEach(col => {
-            const td = document.createElement('td');
-            const value = item[col];
-            td.textContent = value ?? '';
-            tr.appendChild(td);
-          });
-          tbody.appendChild(tr);
-        });
-
-        table.appendChild(thead);
-        table.appendChild(tbody);
-        tableWrapper.innerHTML = '';
-        tableWrapper.appendChild(table);
+        if (!Array.isArray(data) || !data.length) throw new Error('No data returned from available sources');
+        state.data = data;
+        state.filtered = data;
+        state.source = source;
+        populateFilters();
+        renderDashboard();
       } catch (error) {
-        document.getElementById('loading').style.display = 'none';
-        const errorEl = document.getElementById('error');
-        errorEl.style.display = 'block';
-        errorEl.innerHTML = '<strong>Unable to load data from the API.</strong><div class="hint">Check that MySQL is running and the server is connected to the correct database.</div>';
+        elements.loading.style.display = 'none';
+        elements.error.style.display = 'block';
+        elements.error.innerHTML = '<strong>Unable to load data.</strong><div class="hint">Check that the data source is available and try again.</div>';
         console.error(error);
       }
     }
+
+    document.getElementById('search').addEventListener('input', applyFilters);
+    document.getElementById('category').addEventListener('change', applyFilters);
+    document.getElementById('brand').addEventListener('change', applyFilters);
+    document.getElementById('month').addEventListener('change', applyFilters);
+    document.getElementById('page-size').addEventListener('change', (event) => {
+      state.pageSize = Number(event.target.value);
+      state.page = 1;
+      renderTable();
+    });
+    document.getElementById('reset').addEventListener('click', () => {
+      document.getElementById('search').value = '';
+      document.getElementById('category').value = '';
+      document.getElementById('brand').value = '';
+      document.getElementById('month').value = '';
+      applyFilters();
+    });
+    document.getElementById('prev-page').addEventListener('click', () => {
+      if (state.page > 1) {
+        state.page -= 1;
+        renderTable();
+      }
+    });
+    document.getElementById('next-page').addEventListener('click', () => {
+      const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
+      if (state.page < totalPages) {
+        state.page += 1;
+        renderTable();
+      }
+    });
 
     loadData();
   </script>
