@@ -31,6 +31,11 @@ app.get('/api/business-data', async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port}`);
 });
